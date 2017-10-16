@@ -1,6 +1,8 @@
 from Tkinter import *
 import tkMessageBox
 import P1
+import sqlite3
+from compileall import expand_args
 
 
 def almacenar():
@@ -10,13 +12,46 @@ def almacenar():
     if l:
         P1.almacenar(l)
     tkMessageBox.showinfo("Info", "BD creada correctamente")
-
-
+    
+def listar():
+    t = Tk()
+    scrollbar = Scrollbar(t,orient= VERTICAL)
+    scrollbar.pack( side = RIGHT, fill=Y )
+    
+    mylist = Listbox(t, yscrollcommand = scrollbar.set )
+    for line in range(100):
+       mylist.insert(END, "This is line number " + str(line))
+    
+    mylist.pack( side = LEFT, fill = BOTH )
+    scrollbar.config( command = mylist.yview )
+    
+    mainloop()
+    
+def a():
+    t = Tk()
+    scrollbar = Scrollbar(t, orient= VERTICAL)
+    scrollbar.pack(side=RIGHT,fill=Y)
+    
+    lb = Listbox(t,yscrollcommand = scrollbar.set,height=30,width=100)
+    
+    conn = sqlite3.connect('noticias.db')
+    cursor = conn.execute("SELECT * from NOTICIAS")
+    for row in cursor:  
+        lb.insert(1, row[0])
+        lb.insert(2, row[1])
+        lb.insert(3, row[2])
+        lb.insert(4, "\n")
+       
+    conn.close() 
+    lb.pack( side = LEFT, fill = BOTH )
+    scrollbar.config(command=lb.yview())     #Permite el desplazamiento 
+    top.mainloop()
+    
 top = Tk()
 
 almacenar_button = Button(top, text="Almacenar", command=almacenar)
-listar_button = Button(top, text="Listar")
-buscar_button = Button(top, text="Buscar")
+listar_button = Button(top, text="Listar", command=listar)
+buscar_button = Button(top, text="Buscar", command=a)
 
 almacenar_button.pack(side='left')
 listar_button.pack(side='left')
