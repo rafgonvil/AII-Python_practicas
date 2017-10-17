@@ -15,20 +15,6 @@ def almacenar():
     
 def listar():
     t = Tk()
-    scrollbar = Scrollbar(t,orient= VERTICAL)
-    scrollbar.pack( side = RIGHT, fill=Y )
-    
-    mylist = Listbox(t, yscrollcommand = scrollbar.set )
-    for line in range(100):
-       mylist.insert(END, "This is line number " + str(line))
-    
-    mylist.pack( side = LEFT, fill = BOTH )
-    scrollbar.config( command = mylist.yview )
-    
-    mainloop()
-    
-def a():
-    t = Tk()
     scrollbar = Scrollbar(t, orient= VERTICAL)
     scrollbar.pack(side=RIGHT,fill=Y)
     
@@ -44,14 +30,15 @@ def a():
        
     conn.close() 
     lb.pack( side = LEFT, fill = BOTH )
-    scrollbar.config(command=lb.yview())     #Permite el desplazamiento 
+    scrollbar.config(command=lb.yview)     #Permite el desplazamiento 
     top.mainloop()
+    
     
 top = Tk()
 
 almacenar_button = Button(top, text="Almacenar", command=almacenar)
 listar_button = Button(top, text="Listar", command=listar)
-buscar_button = Button(top, text="Buscar", command=a)
+buscar_button = Button(top, text="Buscar")
 
 almacenar_button.pack(side='left')
 listar_button.pack(side='left')
