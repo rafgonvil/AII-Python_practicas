@@ -11,7 +11,7 @@ import sqlite3
 
 
 def almacenar_lineas(titulo, link, fecha, conn):
-    conn.execute("INSERT INTO NOTICIAS (TITULO,LINK,FECHA) VALUES ('%s','%s','%s')" % (titulo, link, fecha));
+    conn.execute("INSERT INTO NOTICIAS (TITULO,LINK,FECHA) VALUES ('%s','%s','%s')" % (titulo, link, fecha))
     conn.commit()
 
 
