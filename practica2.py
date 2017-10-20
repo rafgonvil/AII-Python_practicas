@@ -1,8 +1,10 @@
-# Enlace a la pr√°ctica:
+# encoding: latin1
+
+# Enlace a la pr·ctica:
 # http://www.lsi.us.es/docencia/get.php?id=8986
 
-# A - Almacenar Categor√≠as
+# A - Almacenar CategorÌas
 
-# B - Buscar Categor√≠as
+# B - Buscar CategorÌas
 
 # C - Buscar Evento
