@@ -18,8 +18,8 @@ def almacenar_bd():
        (NOMBRE TEXT PRIMARY KEY,
        LINK           TEXT    NOT NULL,
        CATEGORIA           TEXT    NOT NULL,
-       PRECIO           DOUBLE    NOT NULL,
-       PRECIODESC        DOUBLE);''')
+       PRECIO           NUMBER    NOT NULL,
+       PRECIODESC        NUMBER);''')
     l = extraer_datos()
     for i in l:
         nombre,link,categoria,precio,preciodesc = i
@@ -31,17 +31,18 @@ def almacenar_bd():
     conn.close()
     
 def extraer_datos():
-    file = urllib2.urlopen("http://www.sevillaguia.com/sevillaguia/agendacultural/agendacultural.asp")
+    file = urllib2.urlopen("link")
     soup = BeautifulSoup(file, 'html.parser')
     
 def listar_bd():
     t = Toplevel()
+    categorias = []
     conn = sqlite3.connect('productos.db')
     cursor = conn.execute("SELECT CATEGORIA FROM PRODUCTOS")
     texto = StringVar()
     for row in cursor:
-        t=(row[0])
-        if row[0] in t:
+        categorias.append(row[0])
+        if row[0] in categorias:
             continue
     w = Spinbox(t,textvariable=texto, values=t)
     w.pack()
