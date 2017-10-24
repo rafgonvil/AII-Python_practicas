@@ -19,7 +19,7 @@ def almacenar_bd():
        LINK           TEXT    NOT NULL,
        CATEGORIA           TEXT    NOT NULL,
        PRECIO           DOUBLE    NOT NULL,
-       PRECIODESC        DOUBLE NOT NULL);''')
+       PRECIODESC        DOUBLE);''')
     l = extraer_datos()
     for i in l:
         nombre,link,categoria,precio,preciodesc = i
@@ -33,4 +33,54 @@ def almacenar_bd():
 def extraer_datos():
     file = urllib2.urlopen("http://www.sevillaguia.com/sevillaguia/agendacultural/agendacultural.asp")
     soup = BeautifulSoup(file, 'html.parser')
-    print soup.find_all().__doc__
+    
+def listar_bd():
+    t = Toplevel()
+    conn = sqlite3.connect('productos.db')
+    cursor = conn.execute("SELECT CATEGORIA FROM PRODUCTOS")
+    texto = StringVar()
+    for row in cursor:
+        t=(row[0])
+        if row[0] in t:
+            continue
+    w = Spinbox(t,textvariable=texto, values=t)
+    w.pack()
+    buscar_button = Button(t, text="Buscar", command=lambda: buscar(texto.get())) #lambda sirve para poder pasar parametros en el metodo
+    buscar_button.pack(side=LEFT)
+    
+def buscar(cat):
+    t = Toplevel()
+    scrollbar = Scrollbar(t, orient=VERTICAL)
+    scrollbar.pack(side=RIGHT, fill=Y)
+
+    lb = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
+
+    conn = sqlite3.connect('productos.db')
+    cursor = conn.execute("SELECT * from PRODUCTOS")
+    for row in cursor:
+        nombre, link, categoria,precio,preciodesc = row
+        if cat in categoria:
+            lb.insert(END, nombre)
+            lb.insert(END, link)
+            lb.insert(END, categoria)
+            lb.insert(END, precio)
+            lb.insert(END, preciodesc)
+            lb.insert(END, "\n")
+
+    conn.close()
+    lb.pack(side=LEFT, fill=BOTH)
+    scrollbar.config(command=lb.yview)  # Permite el desplazamiento
+    
+    
+def ventana_principal():
+    top = Tk()
+    almacenar = Button(top, text="Almacenar Categorias", command=almacenar_bd)
+    almacenar.pack(side=LEFT)
+    listar = Button(top, text="Mostrar Categorias", command=listar_bd)
+    listar.pack(side=LEFT)
+    top.mainloop()
+
+
+if __name__ == "__main__":
+    ventana_principal()
+
