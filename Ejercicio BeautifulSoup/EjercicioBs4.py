@@ -90,9 +90,9 @@ def listar_bd():
     texto = StringVar()
     categorias = set()
     for row in cursor:
-        categorias.add(row)
+        categorias.add(row[0])
     categorias = list(categorias)
-    w = Spinbox(t, textvariable=texto, values=categorias)
+    w = Spinbox(t, textvariable=texto, values=categorias,width=30)
     w.pack()
     buscar_button = Button(t, text="Buscar",
                            command=lambda: buscar(texto.get()))  # lambda sirve para poder pasar parametros en el metodo
@@ -107,7 +107,9 @@ def buscar(cat):
     lb = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
 
     conn = sqlite3.connect('productos.db')
-    cursor = conn.execute("SELECT * from PRODUCTOS")
+    print "SELECT * from PRODUCTOS WHERE CATEGORIA='"+cat+"'"
+    cursor = conn.execute("SELECT * from PRODUCTOS WHERE CATEGORIA='"+cat+"'")
+    
     for row in cursor:
         id_, nombre, link, categoria, precio, preciodesc = row
         if cat in categoria:
