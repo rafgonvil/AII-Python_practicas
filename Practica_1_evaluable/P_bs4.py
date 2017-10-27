@@ -5,7 +5,7 @@ import tkMessageBox
 import sqlite3
 import urllib2
 from bs4 import BeautifulSoup
-
+import datetime
 
 def cargar_datos():
     datos = []
@@ -25,7 +25,7 @@ def cargar_datos():
             votos_p = noticia.find(class_='votes-up').text
             votos_n = noticia.find(class_='votes-down').text
 
-            datos.append((titulo, nombre, fecha, enlace, contenido, votos_p, votos_n))
+            datos.append((titulo, enlace, nombre, fecha, contenido, votos_p, votos_n))
 
         pagina = urllib2.urlopen("https://www.meneame.net/" + '?page=' + str(indice + 2))
 
@@ -40,7 +40,7 @@ def almacenar():
        (TITULO TEXT NOT NULL,
        ENLACE           TEXT    NOT NULL,
        AUTOR           TEXT    NOT NULL,
-       FECHA           TEXT    NOT NULL,
+       FECHA           INT    NOT NULL,
        CONTENIDO           TEXT    NOT NULL,
        VOTOSPOS           INT    NOT NULL,
        VOTOSNEG        INT NOT NULL);''')
@@ -49,7 +49,7 @@ def almacenar():
         titulo, enlace, autor, fecha, contenido, votospos, votosneg = i
         conn.execute(
             """INSERT INTO NOTICIAS (TITULO, ENLACE, AUTOR,FECHA,CONTENIDO,VOTOSPOS,VOTOSNEG) VALUES (?,?,?,?,?,?,?)""",
-            (titulo, enlace, autor, fecha, contenido, int(votospos), int(votosneg)))
+            (titulo, enlace, autor, int(fecha), contenido, int(votospos), int(votosneg)))
     conn.commit()
     cursor = conn.execute("SELECT COUNT(*) FROM NOTICIAS")
     tkMessageBox.showinfo("Base Datos",
@@ -70,7 +70,7 @@ def mostrar():
         titulo, autor, fecha = row
         lb.insert(END, titulo)
         lb.insert(END, autor)
-        lb.insert(END, fecha)
+        lb.insert(END, datetime.datetime.fromtimestamp(fecha))
         lb.insert(END, "\n")
 
     lb.pack(side=LEFT, fill=BOTH)
@@ -106,6 +106,7 @@ def interfaz():
 
     top.config(menu=menubar)
     top.mainloop()
+
 
 
 if __name__ == "__main__":
