@@ -77,6 +77,71 @@ def mostrar():
     scrollbar.config(command=lb.yview)
 
 
+def noticias_mejor_valoradas():
+    t = Toplevel()
+    scrollbar = Scrollbar(t, orient=VERTICAL)
+    scrollbar.pack(side=RIGHT, fill=Y)
+
+    lb = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
+
+    conn = sqlite3.connect('noticias.db')
+    cursor = conn.execute("SELECT TITULO,AUTOR,FECHA,VOTOSPOS,VOTOSNEG FROM NOTICIAS")
+
+    datos = []
+
+    for row in cursor:
+        titulo, autor, fecha, votos_pos, votos_neg = row
+        valoracion = votos_pos - votos_neg
+        datos.append((titulo, autor, fecha, valoracion))
+
+    mejores_n = sorted(datos, key=lambda x: x[3])[:5]  # ordenar por valoracion
+
+    for n_mejor in mejores_n:
+        lb.insert(END, n_mejor[0])
+        lb.insert(END, n_mejor[1])
+        lb.insert(END, datetime.datetime.fromtimestamp(n_mejor[2]))
+        lb.insert(END, n_mejor[3])
+        lb.insert(END, "\n")
+
+    lb.pack(side=LEFT, fill=BOTH)
+    scrollbar.config(command=lb.yview)  # Permite el desplazamiento
+
+
+def autores_activos():
+    t = Toplevel()
+    scrollbar = Scrollbar(t, orient=VERTICAL)
+    scrollbar.pack(side=RIGHT, fill=Y)
+
+    lb = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
+
+    conn = sqlite3.connect('noticias.db')
+    cursor = conn.execute("SELECT AUTOR FROM NOTICIAS")
+
+    autores = list(cursor)
+
+    autores_publicaciones = {}
+
+    for autor in autores:
+        if autor in autores_publicaciones.keys():
+            autores_publicaciones[autor] += 1
+        else:
+            autores_publicaciones[autor] = 1
+
+    lista_mejores = []
+    for item in autores_publicaciones.items():
+        lista_mejores.append(item)
+        print lista_mejores[-1]
+
+    mejores_n = sorted(lista_mejores, key=lambda x: x[1])[:2]  # ordenar por valoracion
+
+    for n_mejor in mejores_n:
+        lb.insert(END, n_mejor[0])
+        lb.insert(END, n_mejor[1])
+        lb.insert(END, "\n")
+
+    lb.pack(side=LEFT, fill=BOTH)
+    scrollbar.config(command=lb.yview)  # Permite el desplazamiento
+
 def interfaz():
     top = Tk()
 
@@ -100,13 +165,12 @@ def interfaz():
     menubar.add_cascade(label="Buscar", menu=buscar)
 
     estadisticas = Menu(menubar, tearoff=0)
-    estadisticas.add_command(label="Noticias mas valoradas")  # , command=noticias_valoradas)
-    estadisticas.add_command(label="Autores mas activos")  # , command=autores_activos)
+    estadisticas.add_command(label="Noticias mas valoradas", command=noticias_mejor_valoradas)
+    estadisticas.add_command(label="Autores mas activos", command=autores_activos)
     menubar.add_cascade(label="Estadisticas", menu=estadisticas)
 
     top.config(menu=menubar)
     top.mainloop()
-
 
 
 if __name__ == "__main__":
