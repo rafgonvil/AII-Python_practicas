@@ -38,6 +38,7 @@ def apartado_b():
         with ix.searcher() as searcher:
             query = QueryParser("remitente", ix.schema).parse(unicode(en.get()))
             results = searcher.search(query)
+            print(len(results))
             for r in results:
                 lb.insert(END, r['destinatarios'])
                 lb.insert(END, r['asunto'])

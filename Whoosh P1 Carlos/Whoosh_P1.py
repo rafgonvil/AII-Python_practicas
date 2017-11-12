@@ -11,9 +11,10 @@ from whoosh.fields import Schema, TEXT, KEYWORD
 from whoosh.qparser import QueryParser
 
 dirindex = "Index_temas"
+max_paginas = 3
 
 
-def extraer_datos(url):
+def extraer_datos(url, pagina_actual, maximo_paginas):
     archivo = urllib2.urlopen(url)
     soup = BeautifulSoup(archivo, 'html.parser')
 
@@ -23,22 +24,22 @@ def extraer_datos(url):
     for tema in soup.find_all("li", class_="threadbit"):
         # título y enlace al tema
         titulo_object = tema.find('a', class_="title")
-        titulo = titulo_object.text
-        enlace = enlace_padre + titulo_object["href"]
+        titulo = unicode(titulo_object.text.strip())
+        enlace = unicode(enlace_padre + titulo_object["href"].strip())
 
         # autor
         autor_object = tema.find("a", class_="username")
-        nombre_autor = autor_object.text
-        enlace_autor = enlace_padre + autor_object["href"]
+        nombre_autor = unicode(autor_object.text.strip())
+        enlace_autor = unicode(enlace_padre + autor_object["href"].strip())
 
         # fecha
-        fecha_text = tema.find("span", class_='label').text
-        fecha = fecha_text.split()[-2]
+        fecha_text = unicode(tema.find("span", class_='label').text.strip())
+        fecha = unicode(fecha_text.split()[-2].strip())
 
         # respuestas y visitas
         thread_stats = tema.find("ul", class_="threadstats")
-        respuestas = thread_stats.a.text
-        visitas = thread_stats.find_all("li")[1].text[9:]
+        respuestas = unicode(thread_stats.a.text.strip())
+        visitas = unicode(thread_stats.find_all("li")[1].text[9:].strip())
 
         # Introducir datos
         datos.append(
@@ -47,15 +48,16 @@ def extraer_datos(url):
 
     siguiente_pagina = soup.find("a", rel="next")
 
-    if siguiente_pagina is not None:
-        print("Accediendo a la siguiente página")
-        datos.extend(extraer_datos(enlace_padre + siguiente_pagina["href"]))
+    # Navegando a las siguientes páginas por recursividad
+    if pagina_actual < maximo_paginas and siguiente_pagina is not None:
+        print("Accediendo a la página", pagina_actual + 1)
+        datos.extend(extraer_datos(enlace_padre + siguiente_pagina["href"], pagina_actual + 1, maximo_paginas))
 
     return datos
 
 
 def indexar_command():
-    datos = extraer_datos("http://foros.derecho.com/foro/20-Derecho-Civil-General")
+    datos = extraer_datos("http://foros.derecho.com/foro/20-Derecho-Civil-General", 1, max_paginas)
 
     if datos:  # Comprueba si contiene algo
         if not os.path.exists(dirindex):
@@ -74,8 +76,50 @@ def indexar_command():
                             visitas=dato["visitas"])
         temas_i += 1
 
+    writer.commit()
+
     respuestas_i = 0
     tkMessageBox.showinfo("Indexar", "Se han indexado {} Temas y {} Respuestas".format(temas_i, respuestas_i))
+
+
+def buscar_titulo_command():
+    def mostrar_lista_temas(event):
+        lbox.delete(0, END)  # borra toda la lista
+        ix = open_dir(dirindex)
+        with ix.searcher() as searcher:
+            query = QueryParser("titulo", ix.schema).parse(unicode(en.get()))
+            results = searcher.search(query)
+            for r in results:
+                lbox.insert(END, r['titulo'])
+                lbox.insert(END, r['autor'])
+                lbox.insert(END, r['fecha'])
+                lbox.insert(END, '')
+
+    # Window
+    v = Toplevel()
+    v.title("Búsqueda temas por título")
+
+    # Frame
+    f = Frame(v)
+    f.pack(side=TOP)
+
+    # Label
+    lbl = Label(f, text="Introduzca un título:")
+    lbl.pack(side=LEFT)
+
+    # Entry
+    en = Entry(f)
+    en.bind("<Return>", mostrar_lista_temas)
+    en.pack(side=LEFT)
+
+    # ScrollBar
+    sc = Scrollbar(v)
+    sc.pack(side=RIGHT, fill=Y)
+
+    # ListBox
+    lbox = Listbox(v, yscrollcommand=sc.set)
+    lbox.pack(side=BOTTOM, fill=BOTH)
+    sc.config(command=lbox.yview)
 
 
 def get_schema_temas():
@@ -90,7 +134,7 @@ def ventana_principal():
 
     # Inicio
     inicio_menu = Menu(menubar_top, tearoff=0)
-    inicio_menu.add_command(label="Indexar", command=do_nothing)
+    inicio_menu.add_command(label="Indexar", command=indexar_command)
     inicio_menu.add_separator()
     inicio_menu.add_command(label="Salir", command=top.quit)
     menubar_top.add_cascade(label="Inicio", menu=inicio_menu)
@@ -101,7 +145,7 @@ def ventana_principal():
 
     # Buscar/Temas
     titulo_menu = Menu(buscar_menu, tearoff=0)
-    titulo_menu.add_command(label="Título", command=do_nothing)
+    titulo_menu.add_command(label="Título", command=buscar_titulo_command)
     titulo_menu.add_command(label="Autor", command=do_nothing)
     buscar_menu.add_cascade(label="Temas", menu=titulo_menu)
 
@@ -119,5 +163,4 @@ def do_nothing():
 
 
 if __name__ == '__main__':
-    indexar_command()
-    # ventana_principal()
+    ventana_principal()
