@@ -108,7 +108,7 @@ def buscar_titulo_command():
     lbl.pack(side=LEFT)
 
     # Entry
-    en = Entry(f)
+    en = Entry(f,width=20)
     en.bind("<Return>", mostrar_lista_temas)
     en.pack(side=LEFT)
 
@@ -117,10 +117,48 @@ def buscar_titulo_command():
     sc.pack(side=RIGHT, fill=Y)
 
     # ListBox
-    lbox = Listbox(v, yscrollcommand=sc.set)
+    lbox = Listbox(v, yscrollcommand=sc.set,width=50)
     lbox.pack(side=BOTTOM, fill=BOTH)
     sc.config(command=lbox.yview)
 
+def buscar_autor_command():
+    def mostrar_lista_temas(event):
+        lbox.delete(0, END)  # borra toda la lista
+        ix = open_dir(dirindex)
+        with ix.searcher() as searcher:
+            query = QueryParser("autor", ix.schema).parse(unicode(en.get()))
+            results = searcher.search(query)
+            for r in results:
+                lbox.insert(END, r['titulo'])
+                lbox.insert(END, r['autor'])
+                lbox.insert(END, r['fecha'])
+                lbox.insert(END, '')
+
+    # Window
+    v = Toplevel()
+    v.title("Búsqueda temas por título")
+
+    # Frame
+    f = Frame(v)
+    f.pack(side=TOP)
+
+    # Label
+    lbl = Label(f, text="Introduzca un título:")
+    lbl.pack(side=LEFT)
+
+    # Entry
+    en = Entry(f,width=20)
+    en.bind("<Return>", mostrar_lista_temas)
+    en.pack(side=LEFT)
+
+    # ScrollBar
+    sc = Scrollbar(v)
+    sc.pack(side=RIGHT, fill=Y)
+
+    # ListBox
+    lbox = Listbox(v, yscrollcommand=sc.set,width=50)
+    lbox.pack(side=BOTTOM, fill=BOTH)
+    sc.config(command=lbox.yview)
 
 def get_schema_temas():
     return Schema(titulo=TEXT(stored=True), enlace=TEXT(stored=True), autor=TEXT(stored=True),
@@ -146,7 +184,7 @@ def ventana_principal():
     # Buscar/Temas
     titulo_menu = Menu(buscar_menu, tearoff=0)
     titulo_menu.add_command(label="Título", command=buscar_titulo_command)
-    titulo_menu.add_command(label="Autor", command=do_nothing)
+    titulo_menu.add_command(label="Autor", command=buscar_autor_command)
     buscar_menu.add_cascade(label="Temas", menu=titulo_menu)
 
     # Buscar/Respuestas
