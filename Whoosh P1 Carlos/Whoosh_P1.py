@@ -11,7 +11,7 @@ from whoosh.fields import Schema, TEXT, KEYWORD
 from whoosh.qparser import QueryParser
 
 dirindex = "Index_temas"
-max_paginas = 3
+max_paginas = 1
 
 
 def extraer_datos(url, pagina_actual, maximo_paginas):
@@ -26,7 +26,23 @@ def extraer_datos(url, pagina_actual, maximo_paginas):
         titulo_object = tema.find('a', class_="title")
         titulo = unicode(titulo_object.text.strip())
         enlace = unicode(enlace_padre + titulo_object["href"].strip())
-
+        
+        # tema abierto para añadir respuestas, cogiendo HASTA EL TEMA (no deberia)
+        archivo2 = urllib2.urlopen(enlace)
+        soup2 = BeautifulSoup(archivo2, 'html.parser')
+        
+        respuestas = soup2.find_all('div',class_="postbody")
+        for r in respuestas:
+            r.text
+        fechas = soup2.find_all("span",class_='date')
+        for fe in fechas:
+            fecha_resp = fe.text.split(',')[0]
+        nombres = soup2.find_all('a',class_='username')
+        for n in nombres:
+            nombre = n.strong.text
+            link = enlace_padre + n.get('href')
+            print (link)
+        
         # autor
         autor_object = tema.find("a", class_="username")
         nombre_autor = unicode(autor_object.text.strip())
@@ -165,6 +181,9 @@ def get_schema_temas():
                   enlace_autor=TEXT(stored=True), fecha=TEXT(stored=True), respuestas=TEXT(stored=True),
                   visitas=TEXT(stored=True))
 
+def get_schema_respuestas():
+    return Schema(titulo=TEXT(stored=True), texto=TEXT(stored=True), autor=TEXT(stored=True),
+                  enlace_autor=TEXT(stored=True), fecha=TEXT(stored=True))
 
 def ventana_principal():
     top = Tk()
