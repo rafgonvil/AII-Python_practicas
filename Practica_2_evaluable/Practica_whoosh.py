@@ -4,30 +4,7 @@ from __future__ import print_function
 from Tkinter import *
 import tkMessageBox
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 def ventana_principal():
     top = Tk()
     menubar_top = Menu(top)
@@ -45,16 +22,9 @@ def ventana_principal():
     menubar_top.add_cascade(label="Buscar", menu=buscar_menu)
 
     # Buscar/Noticia
-    titulo_menu = Menu(buscar_menu, tearoff=0)
-    buscar_menu.add_cascade(label="Noticias", menu=titulo_menu)
-    titulo_menu.add_command(label="Título")#, command=buscar_titulo_command)
-    titulo_menu.add_command(label="Autor")#, command=buscar_autor_command)
-
-
-    # Buscar/Fecha
-    respuestas_menu = Menu(buscar_menu, tearoff=0)
-    buscar_menu.add_cascade(label="Fecha", menu=respuestas_menu)
-    respuestas_menu.add_command(label="Texto", command=do_nothing)
+    buscar_menu.add_command(label="Noticia")
+    buscar_menu.add_command(label="Fecha")#, command=buscar_titulo_command)
+    buscar_menu.add_command(label="Autor")#, command=buscar_autor_command)
 
     #Buscar/ Autor
     top.config(menu=menubar_top)
