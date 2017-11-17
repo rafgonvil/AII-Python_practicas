@@ -10,6 +10,134 @@ from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, KEYWORD
 from whoosh.qparser import QueryParser
 
+
+def extraer_datos():
+    """
+    Extraer todos los datos utilizando BS4 y devolverlos
+    """
+
+    archivo = urllib2.urlopen("http://www.delicatessin.com/es/Delicatessin")
+    soup = BeautifulSoup(archivo, 'html.parser')
+
+    categorias = soup.find("div", class_="block_content")
+    links_categorias = [a['href'] for a in categorias.find_all("a")[:3]]
+
+    links_productos = []
+
+    for link in links_categorias:
+        # Navegando y guardando links de productos
+
+        for i in range(3):
+
+            archivo = urllib2.urlopen(link)
+            soup = BeautifulSoup(archivo, 'html.parser')
+
+            aux = soup.find_all("a", class_="prod_snimka")
+            links_productos.extend([a['href'] for a in aux])
+
+            next_page = soup.find('li', id="pagination_next")
+            if next_page is not None:
+                next_page = next_page.find("a")
+
+            if (next_page is None):
+                break
+            else:
+                link = next_page["href"]
+
+    res = []
+
+    for link_prod in links_productos:
+        # Extrayendo datos de cada producto
+        archivo = urllib2.urlopen(
+            "http://www.delicatessin.com/es/aceites-y-condimentos/1572-aceite-de-lino-virgen-ecologico-sol-natural-250ml.html")
+        soup = BeautifulSoup(archivo, 'html.parser')
+
+        left_col = soup.find("div", id="pb-left-column")
+        right_col = soup.find("div", id="pb-right-column")
+
+        # Marca
+
+        marca = left_col.find("h2").text
+
+        # Nombre
+
+        nombre = left_col.find("h1").text
+
+        # Descripcion si la tiene
+
+        descripcion = left_col.find("div", id="short_description_block")
+
+        descripcion = descripcion.find_all("p")[1].text
+
+        # Url imagen
+
+        url = right_col.find("div", id="image-block").img["src"]
+
+        # Lista de caracteristicas
+
+        caracteristicas = right_col.find("ul", class_="tick").find_all("li")
+
+        caract_res = ""
+
+        for c in caracteristicas:
+            caract_res += c.text + ","
+
+        caracteristicas = caract_res[:-1]
+
+        res.append([marca, nombre, descripcion, url, caracteristicas])
+
+    return res
+
+
+def test():
+    # Extrayendo datos de cada producto
+    archivo = urllib2.urlopen(
+        "http://www.delicatessin.com/es/aceites-y-condimentos/1572-aceite-de-lino-virgen-ecologico-sol-natural-250ml.html")
+    soup = BeautifulSoup(archivo, 'html.parser')
+
+    left_col = soup.find("div", id="pb-left-column")
+    right_col = soup.find("div", id="pb-right-column")
+
+    # Marca
+
+    marca = left_col.find("h2").text
+
+    # Nombre
+
+    nombre = left_col.find("h1").text
+
+    # Descripcion si la tiene
+
+    descripcion = left_col.find("div", id="short_description_block")
+
+    descripcion = descripcion.find_all("p")[1].text
+
+    # Url imagen
+
+    url = right_col.find("div", id="image-block").img["src"]
+
+    # Lista de caracteristicas
+
+    caracteristicas = right_col.find("ul", class_="tick").find_all("li")
+
+    caract_res = ""
+
+    for c in caracteristicas:
+        caract_res += c.text + ","
+
+    caracteristicas = caract_res[:-1]
+
+
+def cargar_command():
+    """
+    1 - Extraer datos de la web con BS4
+    2 - Guardar los datos con Whoosh
+    3 - Notificar con una ventana emergente
+    """
+    pass
+
+
+def noticia():
 dirindex = "Index_productos"
 
 def extraer_datos():
@@ -152,7 +280,7 @@ def marca():
     sc.pack(side=RIGHT, fill=Y)
 
     # ListBox
-    lbox = Listbox(v, yscrollcommand=sc.set,width=50)
+    lbox = Listbox(v, yscrollcommand=sc.set, width=50)
     lbox.pack(side=BOTTOM, fill=BOTH)
     sc.config(command=lbox.yview)
     
@@ -167,7 +295,6 @@ def ventana_principal():
     datos_menu.add_command(label="Cargar",command=cargar_command)
     datos_menu.add_separator()
     datos_menu.add_command(label="Salir", command=top.quit)
-    
 
     # Buscar
     buscar_menu = Menu(menubar_top, tearoff=0)
@@ -178,9 +305,10 @@ def ventana_principal():
     buscar_menu.add_command(label="Caracteristica",command=caracteristica)
     buscar_menu.add_command(label="Marca",command=marca)
 
-    #Buscar/ Autor
+    # Buscar/ Autor
     top.config(menu=menubar_top)
     top.mainloop()
 
 if __name__ == '__main__':
-    ventana_principal()
+    print(*extraer_datos(), sep="/n")
+    # ventana_principal()
