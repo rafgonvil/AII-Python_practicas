@@ -54,15 +54,24 @@ def descripcion():
     buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_descripcion(texto.get())) 
     buscar_button_2.pack(side=LEFT)
     
-def command_buscar_descripcion(palabra):
+def command_buscar_descripcion(texto):
     t = Toplevel()
     scrollbar = Scrollbar(t, orient=VERTICAL)
     scrollbar.pack(side=RIGHT, fill=Y)
 
-    lb = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
-
+    lbox = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
+    lbox.delete(0, END)  # borra toda la lista
+    ix = open_dir(dirindex)
+    with ix.searcher() as searcher:
+        query = QueryParser("descripcion", ix.schema).parse(unicode(texto))
+        results = searcher.search(query)
+        for r in results:
+            lbox.insert(END, r['marca'])
+            lbox.insert(END, r['nombre'])
+            lbox.insert(END, r['url_imagen'])
+            lbox.insert(END, '')
    
-    lb.pack(side=LEFT, fill=BOTH)
+    lbox.pack(side=LEFT, fill=BOTH)
     scrollbar.config(command=lb.yview)
     
 def caracteristica():
@@ -83,18 +92,27 @@ def command_buscar_caracteristica(texto):
     scrollbar = Scrollbar(t, orient=VERTICAL)
     scrollbar.pack(side=RIGHT, fill=Y)
 
-    lb = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
-
+    lbox = Listbox(t, yscrollcommand=scrollbar.set, height=30, width=100)
+    lbox.delete(0, END)  # borra toda la lista
+    ix = open_dir(dirindex)
+    with ix.searcher() as searcher:
+        query = QueryParser("caracteristicas", ix.schema).parse(unicode(texto))
+        results = searcher.search(query)
+        for r in results:
+            lbox.insert(END, r['marca'])
+            lbox.insert(END, r['nombre'])
+            lbox.insert(END, r['url_imagen'])
+            lbox.insert(END, '')
    
-    lb.pack(side=LEFT, fill=BOTH)
+    lbox.pack(side=LEFT, fill=BOTH)
     scrollbar.config(command=lb.yview)
     
 def marca():
-    def mostrar_productos(event):
+    def mostrar_productos(palabra):
         lbox.delete(0, END)  # borra toda la lista
         ix = open_dir(dirindex)
         with ix.searcher() as searcher:
-            query = QueryParser("titulo", ix.schema).parse(unicode(en.get()))
+            query = QueryParser("marca", ix.schema).parse(unicode(palabra))
             results = searcher.search(query)
             for r in results:
                 lbox.insert(END, r['titulo'])
@@ -112,11 +130,15 @@ def marca():
 
     # Spinbox
     autores = set()
-    #seleccionar autores
     texto = StringVar()
-   
-   #     autores.add(row[0])
-    autores=list(autores)
+    ix = open_dir(dirindex)
+    with ix.searcher() as searcher:
+        query = QueryParser("marca", ix.schema)
+        #print (query)
+        print (list(searcher.lexicon("marca")))  
+        #autores.add(row[0])
+        autores=list(autores)
+        
     w = Spinbox(f,textvariable=texto, values=autores)
     w.pack(side=LEFT)
     
