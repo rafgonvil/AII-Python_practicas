@@ -6,32 +6,57 @@ import tkMessageBox
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def ventana_principal():
     top = Tk()
     menubar_top = Menu(top)
 
-    # Inicio
-    inicio_menu = Menu(menubar_top, tearoff=0)
-    inicio_menu.add_command(label="Indexar")#, command=indexar_command)
-    inicio_menu.add_separator()
-    inicio_menu.add_command(label="Salir", command=top.quit)
-    menubar_top.add_cascade(label="Inicio", menu=inicio_menu)
+    # Datos
+    datos_menu = Menu(menubar_top, tearoff=0)
+    menubar_top.add_cascade(label="Datos", menu=datos_menu)
+    datos_menu.add_command(label="Cargar")#, command=indexar_command)
+    datos_menu.add_separator()
+    datos_menu.add_command(label="Salir", command=top.quit)
+    
 
     # Buscar
     buscar_menu = Menu(menubar_top, tearoff=0)
     menubar_top.add_cascade(label="Buscar", menu=buscar_menu)
 
-    # Buscar/Temas
+    # Buscar/Noticia
     titulo_menu = Menu(buscar_menu, tearoff=0)
+    buscar_menu.add_cascade(label="Noticias", menu=titulo_menu)
     titulo_menu.add_command(label="Título")#, command=buscar_titulo_command)
     titulo_menu.add_command(label="Autor")#, command=buscar_autor_command)
-    buscar_menu.add_cascade(label="Temas", menu=titulo_menu)
 
-    # Buscar/Respuestas
+
+    # Buscar/Fecha
     respuestas_menu = Menu(buscar_menu, tearoff=0)
+    buscar_menu.add_cascade(label="Fecha", menu=respuestas_menu)
     respuestas_menu.add_command(label="Texto", command=do_nothing)
-    buscar_menu.add_cascade(label="Respuestas", menu=respuestas_menu)
 
+    #Buscar/ Autor
     top.config(menu=menubar_top)
     top.mainloop()
 
