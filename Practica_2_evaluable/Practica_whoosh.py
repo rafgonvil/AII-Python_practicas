@@ -3,21 +3,58 @@ from __future__ import print_function
 
 from Tkinter import *
 import tkMessageBox
+from bs4 import BeautifulSoup
+import urllib2
+import os
+from whoosh.index import create_in, open_dir
+from whoosh.fields import Schema, TEXT, KEYWORD
+from whoosh.qparser import QueryParser
 
-def noticia():
+dirindex = "Index_productos"
+
+def extraer_datos():
+    pass
+
+def cargar_command():
+    datos = extraer_datos("http://www.delicatessin.com/es/Delicatessin", 1)
+
+    if datos:  # Comprueba si contiene algo
+        if not os.path.exists(dirindex):
+            os.mkdir(dirindex)
+    else:
+        print("No se ha extraido ningun dato")
+        return
+
+    ix_temas = create_in(dirindex, schema=get_schema_temas())
+    writer = ix_temas.writer()
+
+    productos = 0
+    for dato in datos:
+        writer.add_document(marca=dato["marca"], nombre=dato["nombre"], descripcion=dato["descripcion"],
+                            url_imagen=dato["url_imagen"], caracteristicas=dato["caracteristicas"])
+        productos += 1
+
+    writer.commit()
+    tkMessageBox.showinfo("Indexar", "Se han indexado {} productos".format(productos))
+    
+def get_schema_producto():
+    return Schema(marca=TEXT(stored=True), nombre=TEXT(stored=True), descripcion=TEXT(stored=True),
+                  url_imagen=TEXT(stored=True), caracteristicas=TEXT(stored=True))
+
+def descripcion():
     ventana = Toplevel()
 
-    l1 = Label(ventana, text="Introduzca una palabra a buscar en el contenido de las noticias :")
+    l1 = Label(ventana, text="Introduzca una/varias palabra/s a buscar en la descripcion del producto :")
     l1.pack(side=LEFT)
 
     texto = StringVar()
     e1 = Entry(ventana, textvariable=texto, bd=7)
     e1.pack(side=LEFT)
 
-    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_noticia(texto.get())) 
+    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_descripcion(texto.get())) 
     buscar_button_2.pack(side=LEFT)
     
-def command_buscar_noticia(palabra):
+def command_buscar_descripcion(palabra):
     t = Toplevel()
     scrollbar = Scrollbar(t, orient=VERTICAL)
     scrollbar.pack(side=RIGHT, fill=Y)
@@ -28,20 +65,20 @@ def command_buscar_noticia(palabra):
     lb.pack(side=LEFT, fill=BOTH)
     scrollbar.config(command=lb.yview)
     
-def fecha():
+def caracteristica():
     ventana = Toplevel()
 
-    l1 = Label(ventana, text="Introduzca una fecha (YYYYMMDD) :")
+    l1 = Label(ventana, text="Introduzca una caracteristica :")
     l1.pack(side=LEFT)
 
     texto = StringVar()
     e1 = Entry(ventana, textvariable=texto, bd=7)
     e1.pack(side=LEFT)
 
-    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_fecha(texto.get())) 
+    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_caracteristica(texto.get())) 
     buscar_button_2.pack(side=LEFT)
     
-def command_buscar_fecha(texto):
+def command_buscar_caracteristica(texto):
     t = Toplevel()
     scrollbar = Scrollbar(t, orient=VERTICAL)
     scrollbar.pack(side=RIGHT, fill=Y)
@@ -52,8 +89,8 @@ def command_buscar_fecha(texto):
     lb.pack(side=LEFT, fill=BOTH)
     scrollbar.config(command=lb.yview)
     
-def buscar_autor():
-    def mostrar_cronicas(event):
+def marca():
+    def mostrar_productos(event):
         lbox.delete(0, END)  # borra toda la lista
         ix = open_dir(dirindex)
         with ix.searcher() as searcher:
@@ -80,11 +117,11 @@ def buscar_autor():
    
    #     autores.add(row[0])
     autores=list(autores)
-    w = Spinbox(v,textvariable=texto, values=autores)
+    w = Spinbox(f,textvariable=texto, values=autores)
     w.pack(side=LEFT)
     
     #Button
-    buscar_button = Button(v, text="Buscar crónicas", command=lambda: mostrar_cronicas(texto.get()))
+    buscar_button = Button(f, text="Buscar crónicas", command=lambda: mostrar_productos(texto.get()))
     buscar_button.pack(side=LEFT)
 
     # ScrollBar
@@ -96,6 +133,7 @@ def buscar_autor():
     lbox.pack(side=BOTTOM, fill=BOTH)
     sc.config(command=lbox.yview)
     
+    
 def ventana_principal():
     top = Tk()
     menubar_top = Menu(top)
@@ -103,7 +141,7 @@ def ventana_principal():
     # Datos
     datos_menu = Menu(menubar_top, tearoff=0)
     menubar_top.add_cascade(label="Datos", menu=datos_menu)
-    datos_menu.add_command(label="Cargar")#, command=indexar_command)
+    datos_menu.add_command(label="Cargar",command=cargar_command)
     datos_menu.add_separator()
     datos_menu.add_command(label="Salir", command=top.quit)
     
@@ -113,16 +151,13 @@ def ventana_principal():
     menubar_top.add_cascade(label="Buscar", menu=buscar_menu)
 
     # Buscar/Noticia
-    buscar_menu.add_command(label="Noticia", command=noticia)
-    buscar_menu.add_command(label="Fecha",command=fecha)
-    buscar_menu.add_command(label="Autor",command=buscar_autor)
+    buscar_menu.add_command(label="Descripcion", command=descripcion)
+    buscar_menu.add_command(label="Caracteristica",command=caracteristica)
+    buscar_menu.add_command(label="Marca",command=marca)
 
     #Buscar/ Autor
     top.config(menu=menubar_top)
     top.mainloop()
-
-def do_nothing():
-     pass
 
 if __name__ == '__main__':
     ventana_principal()
