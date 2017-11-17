@@ -8,7 +8,7 @@ import urllib2
 import os
 from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, KEYWORD
-from whoosh.qparser import QueryParser
+from whoosh.qparser import QueryParser, MultifieldParser
 
 dirindex = "Index_productos"
 
@@ -50,8 +50,7 @@ def extraer_datos():
 
     for link_prod in links_productos:
         # Extrayendo datos de cada producto
-        archivo = urllib2.urlopen(
-            "http://www.delicatessin.com/es/aceites-y-condimentos/1572-aceite-de-lino-virgen-ecologico-sol-natural-250ml.html")
+        archivo = urllib2.urlopen(link_prod)
         soup = BeautifulSoup(archivo, 'html.parser')
 
         left_col = soup.find("div", id="pb-left-column")
@@ -59,7 +58,9 @@ def extraer_datos():
 
         # Marca
 
-        marca = left_col.find("h2").text
+        marca = left_col.find("h2").text.split(' ')
+
+        marca = '_'.join(marca)
 
         # Nombre
 
@@ -69,7 +70,10 @@ def extraer_datos():
 
         descripcion = left_col.find("div", id="short_description_block")
 
-        descripcion = descripcion.find_all("p")[1].text
+        if descripcion is None:
+            descripcion = unicode("No tiene")
+        else:
+            descripcion = descripcion.find_all("p")[1].text
 
         # Url imagen
 
@@ -77,22 +81,28 @@ def extraer_datos():
 
         # Lista de caracteristicas
 
-        caracteristicas = right_col.find("ul", class_="tick").find_all("li")
+        caracteristicas = right_col.find("ul", class_="tick")
 
-        caract_res = ""
+        if caracteristicas is None:
+            caracteristicas = unicode("No tiene")
+        else:
+            caracteristicas = caracteristicas.find_all("li")
 
-        for c in caracteristicas:
-            caract_res += c.text + ","
+            caract_res = ""
 
-        caracteristicas = caract_res[:-1]
+            for c in caracteristicas:
+                caract_res += c.text + ","
+
+            caracteristicas = caract_res[:-1]
 
         res.append([marca, nombre, descripcion, url, caracteristicas])
+        print(res[-1])
 
     return res
 
 
 def cargar_command():
-    datos = extraer_datos("http://www.delicatessin.com/es/Delicatessin", 1)
+    datos = extraer_datos()
 
     if datos:  # Comprueba si contiene algo
         if not os.path.exists(dirindex):
@@ -143,7 +153,7 @@ def command_buscar_descripcion(texto):
     lbox.delete(0, END)  # borra toda la lista
     ix = open_dir(dirindex)
     with ix.searcher() as searcher:
-        query = QueryParser("descripcion", ix.schema).parse(unicode(texto))
+        query = MultifieldParser(["descripcion", "nombre"], ix.schema).parse(unicode(texto))
         results = searcher.search(query)
         for r in results:
             lbox.insert(END, r['marca'])
@@ -180,6 +190,7 @@ def command_buscar_caracteristica(texto):
     with ix.searcher() as searcher:
         query = QueryParser("caracteristicas", ix.schema).parse(unicode(texto))
         results = searcher.search(query)
+        print(results)
         for r in results:
             lbox.insert(END, r['marca'])
             lbox.insert(END, r['nombre'])
@@ -198,14 +209,14 @@ def marca():
             query = QueryParser("marca", ix.schema).parse(unicode(palabra))
             results = searcher.search(query)
             for r in results:
-                lbox.insert(END, r['titulo'])
-                lbox.insert(END, r['autor'])
-                lbox.insert(END, r['fecha'])
+                lbox.insert(END, r['marca'])
+                lbox.insert(END, r['nombre'])
+                lbox.insert(END, r['url_imagen'])
                 lbox.insert(END, '')
 
     # Window
     v = Toplevel()
-    v.title("Búsqueda crónicas por autor")
+    v.title("Búsqueda productos por marca")
 
     # Frame
     f = Frame(v)
@@ -218,15 +229,14 @@ def marca():
     with ix.searcher() as searcher:
         query = QueryParser("marca", ix.schema)
         # print (query)
-        print(list(searcher.lexicon("marca")))
+        aux = list(searcher.lexicon("marca"))
         # autores.add(row[0])
-        autores = list(autores)
 
-    w = Spinbox(f, textvariable=texto, values=autores)
+    w = Spinbox(f, textvariable=texto, values=aux)
     w.pack(side=LEFT)
 
     # Button
-    buscar_button = Button(f, text="Buscar crónicas", command=lambda: mostrar_productos(texto.get()))
+    buscar_button = Button(f, text="Buscar por marcas", command=lambda: mostrar_productos(texto.get()))
     buscar_button.pack(side=LEFT)
 
     # ScrollBar
@@ -265,5 +275,4 @@ def ventana_principal():
 
 
 if __name__ == '__main__':
-    print(*extraer_datos(), sep="/n")
-    # ventana_principal()
+    ventana_principal()
