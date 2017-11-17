@@ -26,23 +26,23 @@ def extraer_datos(url, pagina_actual, maximo_paginas):
         titulo_object = tema.find('a', class_="title")
         titulo = unicode(titulo_object.text.strip())
         enlace = unicode(enlace_padre + titulo_object["href"].strip())
-        
+
         # tema abierto para añadir respuestas, cogiendo HASTA EL TEMA (no deberia)
         archivo2 = urllib2.urlopen(enlace)
         soup2 = BeautifulSoup(archivo2, 'html.parser')
-        
-        respuestas = soup2.find_all('div',class_="postbody")
+
+        respuestas = soup2.find_all('div', class_="postbody")
         for r in respuestas:
             r.text
-        fechas = soup2.find_all("span",class_='date')
+        fechas = soup2.find_all("span", class_='date')
         for fe in fechas:
             fecha_resp = fe.text.split(',')[0]
-        nombres = soup2.find_all('a',class_='username')
+        nombres = soup2.find_all('a', class_='username')
         for n in nombres:
             nombre = n.strong.text
             link = enlace_padre + n.get('href')
-            print (link)
-        
+            print(link)
+
         # autor
         autor_object = tema.find("a", class_="username")
         nombre_autor = unicode(autor_object.text.strip())
@@ -124,7 +124,7 @@ def buscar_titulo_command():
     lbl.pack(side=LEFT)
 
     # Entry
-    en = Entry(f,width=20)
+    en = Entry(f, width=20)
     en.bind("<Return>", mostrar_lista_temas)
     en.pack(side=LEFT)
 
@@ -133,9 +133,10 @@ def buscar_titulo_command():
     sc.pack(side=RIGHT, fill=Y)
 
     # ListBox
-    lbox = Listbox(v, yscrollcommand=sc.set,width=50)
+    lbox = Listbox(v, yscrollcommand=sc.set, width=50)
     lbox.pack(side=BOTTOM, fill=BOTH)
     sc.config(command=lbox.yview)
+
 
 def buscar_autor_command():
     def mostrar_lista_temas(event):
@@ -163,7 +164,7 @@ def buscar_autor_command():
     lbl.pack(side=LEFT)
 
     # Entry
-    en = Entry(f,width=20)
+    en = Entry(f, width=20)
     en.bind("<Return>", mostrar_lista_temas)
     en.pack(side=LEFT)
 
@@ -172,18 +173,21 @@ def buscar_autor_command():
     sc.pack(side=RIGHT, fill=Y)
 
     # ListBox
-    lbox = Listbox(v, yscrollcommand=sc.set,width=50)
+    lbox = Listbox(v, yscrollcommand=sc.set, width=50)
     lbox.pack(side=BOTTOM, fill=BOTH)
     sc.config(command=lbox.yview)
+
 
 def get_schema_temas():
     return Schema(titulo=TEXT(stored=True), enlace=TEXT(stored=True), autor=TEXT(stored=True),
                   enlace_autor=TEXT(stored=True), fecha=TEXT(stored=True), respuestas=TEXT(stored=True),
                   visitas=TEXT(stored=True))
 
+
 def get_schema_respuestas():
     return Schema(titulo=TEXT(stored=True), texto=TEXT(stored=True), autor=TEXT(stored=True),
                   enlace_autor=TEXT(stored=True), fecha=TEXT(stored=True))
+
 
 def ventana_principal():
     top = Tk()
