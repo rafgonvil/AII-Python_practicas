@@ -30,8 +30,9 @@ def cargar_command():
 
     productos = 0
     for dato in datos:
-        writer.add_document(marca=dato["marca"], nombre=dato["nombre"], descripcion=dato["descripcion"],
-                            url_imagen=dato["url_imagen"], caracteristicas=dato["caracteristicas"])
+        marca2,nombre2,descripcion2,url_imagen2,caracteristicas2 = dato
+        writer.add_document(marca=marca2, nombre=nombre2, descripcion=descripcion2,
+                            url_imagen=url_imagen2, caracteristicas=caracteristicas2)
         productos += 1
 
     writer.commit()
@@ -39,7 +40,7 @@ def cargar_command():
     
 def get_schema_producto():
     return Schema(marca=TEXT(stored=True), nombre=TEXT(stored=True), descripcion=TEXT(stored=True),
-                  url_imagen=TEXT(stored=True), caracteristicas=TEXT(stored=True))
+                  url_imagen=TEXT(stored=True), caracteristicas=KEYWORD(stored=True))
 
 def descripcion():
     ventana = Toplevel()
