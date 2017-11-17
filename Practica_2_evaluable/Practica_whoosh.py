@@ -10,6 +10,8 @@ from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, KEYWORD
 from whoosh.qparser import QueryParser
 
+dirindex = "Index_productos"
+
 
 def extraer_datos():
     """
@@ -89,60 +91,6 @@ def extraer_datos():
     return res
 
 
-def test():
-    # Extrayendo datos de cada producto
-    archivo = urllib2.urlopen(
-        "http://www.delicatessin.com/es/aceites-y-condimentos/1572-aceite-de-lino-virgen-ecologico-sol-natural-250ml.html")
-    soup = BeautifulSoup(archivo, 'html.parser')
-
-    left_col = soup.find("div", id="pb-left-column")
-    right_col = soup.find("div", id="pb-right-column")
-
-    # Marca
-
-    marca = left_col.find("h2").text
-
-    # Nombre
-
-    nombre = left_col.find("h1").text
-
-    # Descripcion si la tiene
-
-    descripcion = left_col.find("div", id="short_description_block")
-
-    descripcion = descripcion.find_all("p")[1].text
-
-    # Url imagen
-
-    url = right_col.find("div", id="image-block").img["src"]
-
-    # Lista de caracteristicas
-
-    caracteristicas = right_col.find("ul", class_="tick").find_all("li")
-
-    caract_res = ""
-
-    for c in caracteristicas:
-        caract_res += c.text + ","
-
-    caracteristicas = caract_res[:-1]
-
-
-def cargar_command():
-    """
-    1 - Extraer datos de la web con BS4
-    2 - Guardar los datos con Whoosh
-    3 - Notificar con una ventana emergente
-    """
-    pass
-
-
-def noticia():
-dirindex = "Index_productos"
-
-def extraer_datos():
-    pass
-
 def cargar_command():
     datos = extraer_datos("http://www.delicatessin.com/es/Delicatessin", 1)
 
@@ -153,22 +101,24 @@ def cargar_command():
         print("No se ha extraido ningun dato")
         return
 
-    ix_temas = create_in(dirindex, schema=get_schema_temas())
+    ix_temas = create_in(dirindex, schema=get_schema_producto())
     writer = ix_temas.writer()
 
     productos = 0
     for dato in datos:
-        marca2,nombre2,descripcion2,url_imagen2,caracteristicas2 = dato
+        marca2, nombre2, descripcion2, url_imagen2, caracteristicas2 = dato
         writer.add_document(marca=marca2, nombre=nombre2, descripcion=descripcion2,
                             url_imagen=url_imagen2, caracteristicas=caracteristicas2)
         productos += 1
 
     writer.commit()
     tkMessageBox.showinfo("Indexar", "Se han indexado {} productos".format(productos))
-    
+
+
 def get_schema_producto():
     return Schema(marca=TEXT(stored=True), nombre=TEXT(stored=True), descripcion=TEXT(stored=True),
                   url_imagen=TEXT(stored=True), caracteristicas=KEYWORD(stored=True))
+
 
 def descripcion():
     ventana = Toplevel()
@@ -180,9 +130,10 @@ def descripcion():
     e1 = Entry(ventana, textvariable=texto, bd=7)
     e1.pack(side=LEFT)
 
-    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_descripcion(texto.get())) 
+    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_descripcion(texto.get()))
     buscar_button_2.pack(side=LEFT)
-    
+
+
 def command_buscar_descripcion(texto):
     t = Toplevel()
     scrollbar = Scrollbar(t, orient=VERTICAL)
@@ -199,10 +150,11 @@ def command_buscar_descripcion(texto):
             lbox.insert(END, r['nombre'])
             lbox.insert(END, r['url_imagen'])
             lbox.insert(END, '')
-   
+
     lbox.pack(side=LEFT, fill=BOTH)
-    scrollbar.config(command=lb.yview)
-    
+    scrollbar.config(command=lbox.yview)
+
+
 def caracteristica():
     ventana = Toplevel()
 
@@ -213,9 +165,10 @@ def caracteristica():
     e1 = Entry(ventana, textvariable=texto, bd=7)
     e1.pack(side=LEFT)
 
-    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_caracteristica(texto.get())) 
+    buscar_button_2 = Button(ventana, text="Buscar", command=lambda: command_buscar_caracteristica(texto.get()))
     buscar_button_2.pack(side=LEFT)
-    
+
+
 def command_buscar_caracteristica(texto):
     t = Toplevel()
     scrollbar = Scrollbar(t, orient=VERTICAL)
@@ -232,10 +185,11 @@ def command_buscar_caracteristica(texto):
             lbox.insert(END, r['nombre'])
             lbox.insert(END, r['url_imagen'])
             lbox.insert(END, '')
-   
+
     lbox.pack(side=LEFT, fill=BOTH)
-    scrollbar.config(command=lb.yview)
-    
+    scrollbar.config(command=lbox.yview)
+
+
 def marca():
     def mostrar_productos(palabra):
         lbox.delete(0, END)  # borra toda la lista
@@ -263,15 +217,15 @@ def marca():
     ix = open_dir(dirindex)
     with ix.searcher() as searcher:
         query = QueryParser("marca", ix.schema)
-        #print (query)
-        print (list(searcher.lexicon("marca")))  
-        #autores.add(row[0])
-        autores=list(autores)
-        
-    w = Spinbox(f,textvariable=texto, values=autores)
+        # print (query)
+        print(list(searcher.lexicon("marca")))
+        # autores.add(row[0])
+        autores = list(autores)
+
+    w = Spinbox(f, textvariable=texto, values=autores)
     w.pack(side=LEFT)
-    
-    #Button
+
+    # Button
     buscar_button = Button(f, text="Buscar crónicas", command=lambda: mostrar_productos(texto.get()))
     buscar_button.pack(side=LEFT)
 
@@ -283,8 +237,8 @@ def marca():
     lbox = Listbox(v, yscrollcommand=sc.set, width=50)
     lbox.pack(side=BOTTOM, fill=BOTH)
     sc.config(command=lbox.yview)
-    
-    
+
+
 def ventana_principal():
     top = Tk()
     menubar_top = Menu(top)
@@ -292,7 +246,7 @@ def ventana_principal():
     # Datos
     datos_menu = Menu(menubar_top, tearoff=0)
     menubar_top.add_cascade(label="Datos", menu=datos_menu)
-    datos_menu.add_command(label="Cargar",command=cargar_command)
+    datos_menu.add_command(label="Cargar", command=cargar_command)
     datos_menu.add_separator()
     datos_menu.add_command(label="Salir", command=top.quit)
 
@@ -302,12 +256,13 @@ def ventana_principal():
 
     # Buscar/Noticia
     buscar_menu.add_command(label="Descripcion", command=descripcion)
-    buscar_menu.add_command(label="Caracteristica",command=caracteristica)
-    buscar_menu.add_command(label="Marca",command=marca)
+    buscar_menu.add_command(label="Caracteristica", command=caracteristica)
+    buscar_menu.add_command(label="Marca", command=marca)
 
     # Buscar/ Autor
     top.config(menu=menubar_top)
     top.mainloop()
+
 
 if __name__ == '__main__':
     print(*extraer_datos(), sep="/n")
