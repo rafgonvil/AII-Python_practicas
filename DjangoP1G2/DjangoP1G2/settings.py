@@ -153,3 +153,6 @@ LOGGING = {
         },
     }
 }
+# Identificando la ruta del proyecto
+import os
+RUTA_PROYECTO = os.path.dirname(os.path.realpath(__file__))
