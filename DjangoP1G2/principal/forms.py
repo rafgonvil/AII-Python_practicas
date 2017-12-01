@@ -1,6 +1,5 @@
 from django.forms import ModelForm
-from django import forms
-#from principal.models import Diario,Usuario,Noticia,Autor,TipoNoticia
+from principal.models import Diario,Tipo_noticia, Usuario, Noticia, Autor
 
 class DiarioForm(ModelForm):
     class Meta:
@@ -20,4 +19,4 @@ class AutorForm(ModelForm):
         
 class TipoNoticiaForm(ModelForm):
     class Meta:
-        model = TipoNoticia
+        model = Tipo_noticia
