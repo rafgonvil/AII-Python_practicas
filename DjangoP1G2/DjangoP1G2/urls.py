@@ -14,6 +14,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     # url(r'^admin/', include(admin.site.urls)),
+    url(r'^$','principal.views.inicio'),
     url(r'^/formdiario$','principal.views.nuevo_diario'),
     url(r'^/formusuario$','principal.views.nuevo_usuario'),
     url(r'^/formnoticia$','principal.views.nueva_noticia'),
