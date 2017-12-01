@@ -1,5 +1,4 @@
 from django.db import models
-from pattern.db import primary_key
 
 # Create your models here.
 class Diario(models.Model):
@@ -33,6 +32,4 @@ class Noticia(models.Model):
     autores = models.ManyToManyField(Autor,verbose_name = "autores")
     resumen = models.TextField()
     tipo = models.OneToOneField(Tipo_noticia,verbose_name = "tipo noticia")
-    
-
     
