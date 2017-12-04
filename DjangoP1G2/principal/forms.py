@@ -1,6 +1,10 @@
 from django.forms import ModelForm
 from principal.models import Diario,Tipo_noticia, Usuario, Noticia, Autor
+from django import forms
 
+#class DiarioForm(forms.Form):
+ #   correo = forms.EmailField(label='Tu correo')
+    
 class DiarioForm(ModelForm):
     class Meta:
         model = Diario

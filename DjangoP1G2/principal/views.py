@@ -17,6 +17,8 @@ def nuevo_autor(request):
     return render_to_response('enviar.html',{'formulario':formulario},context_instance=RequestContext(request))
 
 def nuevo_diario(request):
+    #html = '<p>Hola</p>'
+    #return HttpResponse(html)
     if request.method == "POST":
         formulario = DiarioForm(request.POST)
         if formulario.is_valid():
@@ -24,7 +26,7 @@ def nuevo_diario(request):
             return HttpResponseRedirect("/inicio")
     else:
         formulario = DiarioForm()
-    return render_to_response('inicio.html',{'formulario':formulario},context_instance=RequestContext(request))
+    return render_to_response('enviar.html',{'formulario':formulario},context_instance=RequestContext(request))
 
 def nueva_noticia(request):
     if request.method == "POST":
@@ -58,11 +60,10 @@ def nuevo_usuario(request):
 
 def inicio(request):
     return render_to_response('inicio.html')
-    #html = '<p>Hola</p>'
-    #return HttpResponse(html)
     
 def diarios(request):
-    pass
+    diarios = Diario.objects.all()
+    return render_to_response('diarios.html',{'diarios':diarios})
 
 #def login(request):
     
