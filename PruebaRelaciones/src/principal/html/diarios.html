@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block titulo %} Diarios {% endblock %}
+
+{% block encabezado %}
+  <h1>Diarios</h1>
+{% endblock %}
+
+{% block contenido %}
+<ul>
+	{% for d in diarios %}
+	<li>{{d.nombre|capfirst}} </li>
+	{% empty %}
+	<li>No se han encontrado diarios.</li>
+	{% endfor %}
+</ul>
+{% endblock %}
